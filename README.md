@@ -10,7 +10,7 @@ This package provides a command line interface for the Docker v2 API. Documentat
 
 ## Building
 
-<i>docker-registry</i> is build with cargo, so simply run 
+<i>docker-registry</i> is built with cargo, so simply run 
 ```
 cargo build --release
 ```
