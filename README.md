@@ -2,7 +2,7 @@
 docker-registry
 ===
 A CLI wrapper for the docker v2 API written in Rust. 
-  
+
   
 
 ## About
@@ -37,6 +37,18 @@ Example usage for deleting an image:
  docker-reg delete git.taylorcressy.com -u "<username>" -p "<password>" -i taylorcressy/hello-world -t latest
 ```
 
+## Authentication
+
+In order to authenticate against the registry, you can specify your username and password as cli args. `-u` and `-p` respectively. If only specifying `-u` a password prompt will
+appear. Alternatively, you can specify your credentials in a configuration file. This can either be explicitly referenced by passing a path to `--conf` or utilizing the default path
+`${HOME}/.docker-registry/config`.
+
+Example file:
+```
+[auth]
+username=<your username>
+password=<your password>
+```
 
 
 <!-- CONTRIBUTING -->

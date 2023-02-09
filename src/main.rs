@@ -2,9 +2,12 @@ use clap::Parser;
 
 #[macro_use]
 extern crate lazy_static;
+extern crate atty;
 
+mod conf;
 mod registry_client;
 mod http_client;
+mod auth;
 
 
 #[derive(clap::ValueEnum, Clone)]
@@ -51,8 +54,12 @@ struct CliArgs {
     #[arg(short, long)]
     digest: Option<String>,
 
+    #[arg(long)]
+    conf: Option<String>,
+
     #[arg(short, long, default_missing_value = "true", value_parser, default_value = "false")]   
     verbose: bool,
+
 }
 
 #[tokio::main]
@@ -63,16 +70,25 @@ async fn main() {
         std::env::set_var("DOCKER_REG_VERBOSE", "true");
     }
 
-    // TODO: Grab username and password from other places if not passed in (e.g. ~/.docker-reg/config)
-    if args.username.is_none() || args.password.is_none() {
-        // TODO: Need logger implementation
-        println!("Must specify a username and password");
-        std::process::exit(1);
-    }
+    let app_conf = match conf::load_conf(args.conf) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("{}", e);
+            std::process::exit(1);
+        }
+    };
+
+    let auth = match auth::derive_credentials_through_chain(args.username, args.password, app_conf.clone()) {
+        Ok(v) => v,
+        Err(e) =>  { 
+            println!("{}", e);
+            std::process::exit(1);
+        },
+    };
 
     let command_context = registry_client::CommandContext {
-        username: &args.username.unwrap(),
-        password: &args.password.unwrap(),
+        username: &auth.username,
+        password: &auth.password,
         proto: args.proto,
         image_name: args.image,
         tag: args.tag,
